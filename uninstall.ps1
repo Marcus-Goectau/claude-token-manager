@@ -13,7 +13,11 @@ $shortcutPath = Join-Path ([Environment]::GetFolderPath('Programs')) 'Claude Tok
 $runKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
 $uninstallKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\ClaudeTokenManager'
 
-Get-Process ClaudeTokenManager -ErrorAction SilentlyContinue | Stop-Process -Force
+$running = Get-Process ClaudeTokenManager -ErrorAction SilentlyContinue
+if ($running) {
+    $running | Stop-Process -Force
+    $running | Wait-Process -Timeout 10 -ErrorAction SilentlyContinue
+}
 Start-Sleep -Milliseconds 500
 
 Remove-ItemProperty $runKey -Name 'ClaudeTokenManager' -ErrorAction SilentlyContinue

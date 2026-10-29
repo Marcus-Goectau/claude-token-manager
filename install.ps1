@@ -15,11 +15,25 @@ dotnet publish $project -c Release -r win-x64 --self-contained false `
     -p:PublishSingleFile=true -p:DebugType=none -o $publishDir
 if ($LASTEXITCODE -ne 0) { throw "dotnet publish failed with exit code $LASTEXITCODE." }
 
-# The exe is locked while the app is running.
-Get-Process ClaudeTokenManager -ErrorAction SilentlyContinue | Stop-Process -Force
+# The exe is locked while the app is running, and Stop-Process returns before the process has exited.
+$running = Get-Process ClaudeTokenManager -ErrorAction SilentlyContinue
+if ($running) {
+    $running | Stop-Process -Force
+    $running | Wait-Process -Timeout 10 -ErrorAction SilentlyContinue
+}
 
 New-Item -ItemType Directory -Force $installDir | Out-Null
-Copy-Item (Join-Path $publishDir 'ClaudeTokenManager.exe') $exe -Force
+# Windows can hold the file briefly after the process exits.
+for ($attempt = 1; ; $attempt++) {
+    try {
+        Copy-Item (Join-Path $publishDir 'ClaudeTokenManager.exe') $exe -Force
+        break
+    }
+    catch [System.IO.IOException] {
+        if ($attempt -ge 10) { throw "Could not replace $exe because it is still in use. Exit Claude Token Manager from the tray and run the install again." }
+        Start-Sleep -Milliseconds 500
+    }
+}
 Copy-Item (Join-Path $PSScriptRoot 'uninstall.ps1') $uninstallScript -Force
 
 $shortcutPath = Join-Path ([Environment]::GetFolderPath('Programs')) 'Claude Token Manager.lnk'
