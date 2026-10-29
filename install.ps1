@@ -8,6 +8,8 @@ $project = Join-Path $PSScriptRoot 'src\ClaudeTokenManager\ClaudeTokenManager.cs
 $publishDir = Join-Path $PSScriptRoot 'publish'
 $installDir = Join-Path $env:LOCALAPPDATA 'Programs\ClaudeTokenManager'
 $exe = Join-Path $installDir 'ClaudeTokenManager.exe'
+$uninstallScript = Join-Path $installDir 'uninstall.ps1'
+$uninstallKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\ClaudeTokenManager'
 
 dotnet publish $project -c Release -r win-x64 --self-contained false `
     -p:PublishSingleFile=true -p:DebugType=none -o $publishDir
@@ -18,6 +20,7 @@ Get-Process ClaudeTokenManager -ErrorAction SilentlyContinue | Stop-Process -For
 
 New-Item -ItemType Directory -Force $installDir | Out-Null
 Copy-Item (Join-Path $publishDir 'ClaudeTokenManager.exe') $exe -Force
+Copy-Item (Join-Path $PSScriptRoot 'uninstall.ps1') $uninstallScript -Force
 
 $shortcutPath = Join-Path ([Environment]::GetFolderPath('Programs')) 'Claude Token Manager.lnk'
 $shell = New-Object -ComObject WScript.Shell
@@ -30,5 +33,27 @@ if ($StartWithWindows) {
     Set-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run' -Name 'ClaudeTokenManager' -Value "`"$exe`""
 }
 
+# Lists the app under Settings > Apps > Installed apps for the current user.
+$version = (Get-Item $exe).VersionInfo.ProductVersion -replace '\+.*$', ''
+$sizeKb = [int][Math]::Ceiling((Get-ChildItem $installDir -File | Measure-Object Length -Sum).Sum / 1KB)
+$uninstallCommand = "powershell.exe -NoProfile -File `"$uninstallScript`""
+
+New-Item -Force $uninstallKey | Out-Null
+$values = @{
+    DisplayName     = 'Claude Token Manager'
+    DisplayVersion  = $version
+    Publisher       = $env:USERNAME
+    DisplayIcon     = "`"$exe`",0"
+    InstallLocation = $installDir
+    UninstallString = $uninstallCommand
+    InstallDate     = (Get-Date -Format 'yyyyMMdd')
+}
+foreach ($name in $values.Keys) {
+    Set-ItemProperty $uninstallKey -Name $name -Value $values[$name]
+}
+Set-ItemProperty $uninstallKey -Name EstimatedSize -Value $sizeKb -Type DWord
+Set-ItemProperty $uninstallKey -Name NoModify -Value 1 -Type DWord
+Set-ItemProperty $uninstallKey -Name NoRepair -Value 1 -Type DWord
+
 Start-Process $exe
-Write-Host "Installed to $installDir. Look for the icon in the system tray."
+Write-Host "Installed version $version to $installDir. Look for the icon in the system tray."

@@ -18,6 +18,12 @@ Requires the .NET 10 SDK.
 .\install.ps1 -StartWithWindows  # same, and launch at sign-in
 ```
 
+The app shows up under Settings > Apps > Installed apps. No admin rights are needed. Run `install.ps1` again to update; profiles and tokens are kept.
+
+## Uninstall
+
+Use Uninstall in Installed apps, or run `uninstall.ps1`. It asks whether to also delete your saved profiles and the tokens in Credential Manager. Pass `-RemoveData` or `-KeepData` to skip the question.
+
 ## Use
 
 - Left-click the tray icon to open the manager. Right-click it to switch profiles; the active one is checked.
