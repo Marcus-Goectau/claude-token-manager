@@ -59,10 +59,22 @@ public static class ClaudeSettings
             root = new JsonObject();
         }
 
-        if (root["env"] is not JsonObject env)
+        var reason = TokenUtil.Validate(token);
+        if (reason != null) throw new ArgumentException(reason);
+
+        JsonObject env;
+        switch (root["env"])
         {
-            env = new JsonObject();
-            root["env"] = env;
+            case null:
+                env = new JsonObject();
+                root["env"] = env;
+                break;
+            case JsonObject existing:
+                env = existing;
+                break;
+            default:
+                // Replacing it would throw away whatever is there.
+                throw new InvalidDataException("\"env\" in settings.json is not an object. Fix the file by hand first.");
         }
         env[TokenKey] = token;
 

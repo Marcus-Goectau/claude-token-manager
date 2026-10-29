@@ -122,7 +122,7 @@ public partial class MainWindow : Window
             if (string.IsNullOrEmpty(token))
                 MessageBox.Show(this, "No token is stored for this profile.", Title);
             else
-                Clipboard.SetText(token);
+                SecureClipboard.SetSecret(token);
         });
     }
 

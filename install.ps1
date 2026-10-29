@@ -36,7 +36,8 @@ if ($StartWithWindows) {
 # Lists the app under Settings > Apps > Installed apps for the current user.
 $version = (Get-Item $exe).VersionInfo.ProductVersion -replace '\+.*$', ''
 $sizeKb = [int][Math]::Ceiling((Get-ChildItem $installDir -File | Measure-Object Length -Sum).Sum / 1KB)
-$uninstallCommand = "powershell.exe -NoProfile -File `"$uninstallScript`""
+# Bypass applies to this one run only, so a later policy change can't leave the app impossible to uninstall.
+$uninstallCommand = "powershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$uninstallScript`""
 
 New-Item -Force $uninstallKey | Out-Null
 $values = @{

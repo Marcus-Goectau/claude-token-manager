@@ -101,7 +101,13 @@ public partial class App : Application
         }
 
         RefreshActive();
-        _tray?.Notify($"Switched to {profile.Name}. Restart Claude Code sessions to pick it up.");
+        var running = ClaudeSessions.CountRunning();
+        _tray?.Notify(running switch
+        {
+            0 => $"Switched to {profile.Name}.",
+            1 => $"Switched to {profile.Name}. 1 Claude Code session was already running and may still use the old token. Restart it, or run claude --continue.",
+            _ => $"Switched to {profile.Name}. {running} Claude Code sessions were already running and may still use the old token. Restart them, or run claude --continue.",
+        });
         return true;
     }
 

@@ -18,11 +18,18 @@ Start-Sleep -Milliseconds 500
 
 Remove-ItemProperty $runKey -Name 'ClaudeTokenManager' -ErrorAction SilentlyContinue
 Remove-Item $shortcutPath -Force -ErrorAction SilentlyContinue
-Remove-Item $uninstallKey -Recurse -Force -ErrorAction SilentlyContinue
 
 # This script may be running from the install folder, so move out before deleting it.
 Set-Location $env:TEMP
 Remove-Item $installDir -Recurse -Force -ErrorAction SilentlyContinue
+
+# Keep the Installed apps entry when files are left behind, so the uninstall can be retried.
+if (Test-Path $installDir) {
+    Write-Host "Uninstall failed: could not delete $installDir. Close anything using it and run Uninstall again."
+    if ($Host.Name -eq 'ConsoleHost' -and [Environment]::UserInteractive) { Read-Host 'Press Enter to close' }
+    exit 1
+}
+Remove-Item $uninstallKey -Recurse -Force -ErrorAction SilentlyContinue
 
 if (-not $RemoveData -and -not $KeepData) {
     $answer = Read-Host 'Also delete your saved profiles and the tokens stored in Credential Manager? (y/N)'
@@ -41,9 +48,6 @@ else {
     Write-Host "Kept your profiles in $dataDir and your tokens in Credential Manager."
 }
 
-if (Test-Path $installDir) {
-    Write-Host "Could not fully delete $installDir. Remove it by hand."
-}
 Write-Host 'Claude Token Manager has been uninstalled.'
 
 # Keep the window open when launched from Installed apps.

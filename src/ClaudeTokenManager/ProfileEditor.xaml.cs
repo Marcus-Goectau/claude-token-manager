@@ -74,6 +74,11 @@ public partial class ProfileEditor : Window
             MessageBox.Show(this, "Enter the API token.", Title);
             return;
         }
+        if (token.Length > 0 && TokenUtil.Validate(token) is { } reason)
+        {
+            MessageBox.Show(this, reason, Title);
+            return;
+        }
 
         Token = token.Length == 0 ? null : token;
         DialogResult = true;

@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace ClaudeTokenManager.Services;
@@ -63,7 +64,10 @@ public static class CredentialVault
         }
         finally
         {
+            // Don't leave copies of the token in freed memory.
+            Marshal.Copy(new byte[bytes.Length], 0, blob, bytes.Length);
             Marshal.FreeHGlobal(blob);
+            CryptographicOperations.ZeroMemory(bytes);
         }
     }
 

@@ -29,3 +29,5 @@ Use Uninstall in Installed apps, or run `uninstall.ps1`. It asks whether to also
 - Left-click the tray icon to open the manager. Right-click it to switch profiles; the active one is checked.
 - If settings.json already has a token that isn't in your library, the manager offers to save it as a profile.
 - To rotate a key, edit the profile and paste the new token. If that profile is active, settings.json is updated right away.
+- After a switch, the notification says how many Claude Code sessions were already running. Those may still use the old token until restarted (`claude --continue` resumes the last conversation).
+- Copy token puts the token on the clipboard without adding it to clipboard history or cloud clipboard, and clears it after 30 seconds.

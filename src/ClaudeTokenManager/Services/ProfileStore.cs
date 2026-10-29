@@ -31,7 +31,9 @@ public sealed class ProfileStore
     public void Save()
     {
         Directory.CreateDirectory(DataDir);
-        File.WriteAllText(FilePath, JsonSerializer.Serialize(Profiles, JsonOptions));
+        var tmp = FilePath + ".tmp";
+        File.WriteAllText(tmp, JsonSerializer.Serialize(Profiles, JsonOptions));
+        File.Move(tmp, FilePath, overwrite: true);
         Changed?.Invoke(this, EventArgs.Empty);
     }
 
@@ -72,6 +74,9 @@ public sealed class ProfileStore
 
     private static void SetToken(Profile profile, string token)
     {
+        var reason = TokenUtil.Validate(token);
+        if (reason != null) throw new ArgumentException(reason);
+
         CredentialVault.Save(profile.Id, profile.Name, token);
         profile.TokenHash = TokenUtil.Hash(token);
         profile.TokenHint = TokenUtil.Hint(token);
