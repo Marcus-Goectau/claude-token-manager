@@ -1,9 +1,6 @@
 using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Text;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using ClaudeTokenManager.Services;
 
@@ -78,27 +75,13 @@ public sealed class TrayIcon : IDisposable
             Process.Start(new ProcessStartInfo(ClaudeSettings.FilePath) { UseShellExecute = true });
     }
 
+    // Pick the frame that matches the tray size at the current DPI.
     private static Icon CreateIcon()
     {
-        using var bmp = new Bitmap(32, 32);
-        using (var g = Graphics.FromImage(bmp))
-        {
-            g.SmoothingMode = SmoothingMode.AntiAlias;
-            g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
-            using var fill = new SolidBrush(Color.FromArgb(217, 119, 87));
-            g.FillEllipse(fill, 1, 1, 30, 30);
-            using var font = new Font("Segoe UI", 15, System.Drawing.FontStyle.Bold, GraphicsUnit.Pixel);
-            var format = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
-            g.DrawString("T", font, Brushes.White, new RectangleF(0, 0, 32, 32), format);
-        }
-        var handle = bmp.GetHicon();
-        var icon = (Icon)Icon.FromHandle(handle).Clone();
-        DestroyIcon(handle);
-        return icon;
+        var info = System.Windows.Application.GetResourceStream(new Uri("pack://application:,,,/Assets/app.ico"));
+        using var stream = info!.Stream;
+        return new Icon(stream, SystemInformation.SmallIconSize);
     }
-
-    [DllImport("user32.dll")]
-    private static extern bool DestroyIcon(IntPtr handle);
 
     public void Dispose()
     {
