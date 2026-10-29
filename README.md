@@ -1,0 +1,25 @@
+# Claude Token Manager
+
+A small Windows tray app for keeping a library of LiteLLM API tokens and switching which one Claude Code uses.
+
+Switching a profile rewrites `env.ANTHROPIC_AUTH_TOKEN` in `~/.claude/settings.json` and leaves everything else in the file alone. The previous version is saved as `settings.json.bak`. Running Claude Code sessions have to be restarted to pick up the new token.
+
+## Storage
+
+- Tokens: Windows Credential Manager, as generic credentials named `ClaudeTokenManager:<id>`.
+- Profile names and notes: `%APPDATA%\ClaudeTokenManager\profiles.json`. This file holds only a SHA-256 hash and a short hint of each token, never the token itself.
+
+## Install
+
+Requires the .NET 10 SDK.
+
+```powershell
+.\install.ps1                    # build, copy to %LOCALAPPDATA%\Programs, add a Start Menu shortcut
+.\install.ps1 -StartWithWindows  # same, and launch at sign-in
+```
+
+## Use
+
+- Left-click the tray icon to open the manager. Right-click it to switch profiles; the active one is checked.
+- If settings.json already has a token that isn't in your library, the manager offers to save it as a profile.
+- To rotate a key, edit the profile and paste the new token. If that profile is active, settings.json is updated right away.
