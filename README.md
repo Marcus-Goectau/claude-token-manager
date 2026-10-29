@@ -1,6 +1,6 @@
 # Claude Token Manager
 
-A small Windows tray app for keeping a library of LiteLLM API tokens and switching which one Claude Code uses.
+A small Windows tray app for keeping a library of auth tokens and switching which one Claude Code uses. It works with any token Claude Code accepts in `ANTHROPIC_AUTH_TOKEN`, such as keys for a LiteLLM proxy or another gateway.
 
 Switching a profile rewrites `env.ANTHROPIC_AUTH_TOKEN` in `~/.claude/settings.json` and leaves everything else in the file alone. The previous version is saved as `settings.json.bak`. Running Claude Code sessions have to be restarted to pick up the new token.
 
