@@ -30,4 +30,5 @@ Use Uninstall in Installed apps, or run `uninstall.ps1`. It asks whether to also
 - If settings.json already has a token that isn't in your library, the manager offers to save it as a profile.
 - To rotate a key, edit the profile and paste the new token. If that profile is active, settings.json is updated right away.
 - After a switch, the notification says how many Claude Code sessions were already running. Those may still use the old token until restarted (`claude --continue` resumes the last conversation).
+- Each profile can have an optional expiration date. Tokens expiring within 7 days are flagged in the list and the tray menu, expired ones are shown in red, and switching to an expired token asks first. A notification at startup lists tokens that have expired or are about to.
 - Copy token puts the token on the clipboard without adding it to clipboard history or cloud clipboard, and clears it after 30 seconds.

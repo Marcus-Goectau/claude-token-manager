@@ -11,6 +11,7 @@ public partial class ProfileEditor : Window
 
     public string ProfileName => NameBox.Text.Trim();
     public string ProfileNotes => NotesBox.Text.Trim();
+    public DateOnly? ExpiresOn => ExpiryPicker.SelectedDate is { } d ? DateOnly.FromDateTime(d) : null;
 
     // Null when editing and the token field was left blank.
     public string? Token { get; private set; }
@@ -25,6 +26,7 @@ public partial class ProfileEditor : Window
         {
             NameBox.Text = profile.Name;
             NotesBox.Text = profile.Notes;
+            ExpiryPicker.SelectedDate = profile.ExpiresOn?.ToDateTime(TimeOnly.MinValue);
             TokenLabel.Text = $"API token (current {profile.TokenHint}, leave blank to keep)";
             ShowCheck.Content = "Show current token";
         }
@@ -60,11 +62,19 @@ public partial class ProfileEditor : Window
         }
     }
 
+    private void ClearExpiry_Click(object sender, RoutedEventArgs e) => ExpiryPicker.SelectedDate = null;
+
     private void Save_Click(object sender, RoutedEventArgs e)
     {
         if (ProfileName.Length == 0)
         {
             MessageBox.Show(this, "Enter a name for the profile.", Title);
+            return;
+        }
+        // The picker keeps typed text that doesn't parse as a date without telling anyone.
+        if (ExpiryPicker.SelectedDate == null && !string.IsNullOrWhiteSpace(ExpiryPicker.Text))
+        {
+            MessageBox.Show(this, "The expiration date isn't a valid date. Pick one from the calendar or clear it.", Title);
             return;
         }
 

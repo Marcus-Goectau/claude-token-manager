@@ -56,6 +56,25 @@ public partial class App : Application
 
         if (Store.Profiles.Count == 0 || e.Args.Contains("--show"))
             ShowManager();
+
+        WarnAboutExpiry();
+    }
+
+    private void WarnAboutExpiry()
+    {
+        var expired = Store.Profiles.Count(p => p.IsExpired);
+        var soon = Store.Profiles.Count(p => p.IsExpiringSoon);
+        var active = ActiveProfile;
+
+        string? message = active switch
+        {
+            { IsExpired: true } => $"The active token, {active.Name}, expired on {active.ExpiresOn:d}.",
+            { IsExpiringSoon: true } => $"The active token, {active.Name}, expires {active.ExpiryText}.",
+            _ when expired + soon > 0 =>
+                $"{expired + soon} saved token{(expired + soon == 1 ? " has" : "s have")} expired or will expire within {Profile.ExpiringSoonDays} days.",
+            _ => null,
+        };
+        if (message != null) _tray?.Notify(message);
     }
 
     protected override void OnExit(ExitEventArgs e)
@@ -82,6 +101,14 @@ public partial class App : Application
 
     public bool Activate(Profile profile)
     {
+        if (profile.IsExpired)
+        {
+            var answer = MessageBox.Show(
+                $"The token for \"{profile.Name}\" expired on {profile.ExpiresOn:d}. Switch to it anyway?",
+                "Claude Token Manager", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            if (answer != MessageBoxResult.Yes) return false;
+        }
+
         try
         {
             var token = CredentialVault.Read(profile.Id);

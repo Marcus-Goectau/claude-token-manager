@@ -1,7 +1,7 @@
 <Window x:Class="ClaudeTokenManager.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Claude Token Manager" Width="640" Height="420" MinWidth="520" MinHeight="300"
+        Title="Claude Token Manager" Width="720" Height="420" MinWidth="520" MinHeight="300"
         WindowStartupLocation="CenterScreen">
     <DockPanel Margin="12">
         <Border x:Name="ImportBanner" DockPanel.Dock="Top" Visibility="Collapsed"
@@ -33,8 +33,29 @@
                 <GridView>
                     <GridViewColumn Header="" Width="28" DisplayMemberBinding="{Binding ActiveMark}" />
                     <GridViewColumn Header="Name" Width="170" DisplayMemberBinding="{Binding Name}" />
-                    <GridViewColumn Header="Token" Width="120" DisplayMemberBinding="{Binding Hint}" />
-                    <GridViewColumn Header="Notes" Width="270" DisplayMemberBinding="{Binding Notes}" />
+                    <GridViewColumn Header="Token" Width="110" DisplayMemberBinding="{Binding Hint}" />
+                    <GridViewColumn Header="Expires" Width="150">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Expiry}">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding ExpiryState}" Value="Soon">
+                                                    <Setter Property="Foreground" Value="#B26A00" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding ExpiryState}" Value="Expired">
+                                                    <Setter Property="Foreground" Value="#C62828" />
+                                                    <Setter Property="FontWeight" Value="SemiBold" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Notes" Width="200" DisplayMemberBinding="{Binding Notes}" />
                 </GridView>
             </ListView.View>
         </ListView>

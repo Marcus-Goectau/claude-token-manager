@@ -16,6 +16,8 @@ public partial class MainWindow : Window
         public string Name => Profile.Name;
         public string Hint => Profile.TokenHint;
         public string Notes => Profile.Notes;
+        public string Expiry => Profile.ExpiryText;
+        public string ExpiryState => Profile.IsExpired ? "Expired" : Profile.IsExpiringSoon ? "Soon" : "";
     }
 
     public MainWindow(App app)
@@ -46,9 +48,13 @@ public partial class MainWindow : Window
         ProfileList.ItemsSource = rows;
         ProfileList.SelectedItem = rows.FirstOrDefault(r => r.Profile.Id == selectedId);
 
-        ActiveText.Text = _app.ActiveProfile is { } active
-            ? $"Active: {active.Name}"
-            : "Active: none of your saved profiles";
+        ActiveText.Text = _app.ActiveProfile switch
+        {
+            null => "Active: none of your saved profiles",
+            { IsExpired: true } a => $"Active: {a.Name} (expired {a.ExpiresOn:d})",
+            { IsExpiringSoon: true } a => $"Active: {a.Name} (expires {a.ExpiryText})",
+            var a => $"Active: {a.Name}",
+        };
 
         var current = ClaudeSettings.ReadToken();
         ImportBanner.Visibility = !string.IsNullOrEmpty(current) && _app.ActiveProfile == null
@@ -83,7 +89,7 @@ public partial class MainWindow : Window
     {
         var editor = new ProfileEditor(null, token) { Owner = this };
         if (editor.ShowDialog() != true) return;
-        Run(() => _app.Store.Add(editor.ProfileName, editor.ProfileNotes, editor.Token!));
+        Run(() => _app.Store.Add(editor.ProfileName, editor.ProfileNotes, editor.ExpiresOn, editor.Token!));
     }
 
     private void Edit_Click(object sender, RoutedEventArgs e)
@@ -98,7 +104,7 @@ public partial class MainWindow : Window
 
         var wasActive = profile == _app.ActiveProfile;
         var tokenChanged = !string.IsNullOrEmpty(editor.Token) && TokenUtil.Hash(editor.Token) != profile.TokenHash;
-        Run(() => _app.Store.Update(profile, editor.ProfileName, editor.ProfileNotes, editor.Token));
+        Run(() => _app.Store.Update(profile, editor.ProfileName, editor.ProfileNotes, editor.ExpiresOn, editor.Token));
 
         // A rotated key for the active profile should land in settings.json right away.
         if (wasActive && tokenChanged) _app.Activate(profile);

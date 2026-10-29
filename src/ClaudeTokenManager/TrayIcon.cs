@@ -46,7 +46,14 @@ public sealed class TrayIcon : IDisposable
 
         foreach (var profile in _app.Store.Profiles.OrderBy(p => p.Name, StringComparer.OrdinalIgnoreCase))
         {
-            var item = new ToolStripMenuItem(profile.Name)
+            var label = profile switch
+            {
+                { IsExpired: true } => $"{profile.Name} (expired)",
+                { IsExpiringSoon: true } => $"{profile.Name} (expires {profile.ExpiryText})",
+                _ => profile.Name,
+            };
+            // A single & would be read as a keyboard shortcut marker.
+            var item = new ToolStripMenuItem(label.Replace("&", "&&"))
             {
                 Checked = profile == _app.ActiveProfile,
                 ToolTipText = profile.Notes,

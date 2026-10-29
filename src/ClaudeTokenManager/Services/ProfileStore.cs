@@ -37,19 +37,20 @@ public sealed class ProfileStore
         Changed?.Invoke(this, EventArgs.Empty);
     }
 
-    public Profile Add(string name, string notes, string token)
+    public Profile Add(string name, string notes, DateOnly? expiresOn, string token)
     {
-        var profile = new Profile { Name = name, Notes = notes };
+        var profile = new Profile { Name = name, Notes = notes, ExpiresOn = expiresOn };
         SetToken(profile, token);
         Profiles.Add(profile);
         Save();
         return profile;
     }
 
-    public void Update(Profile profile, string name, string notes, string? newToken)
+    public void Update(Profile profile, string name, string notes, DateOnly? expiresOn, string? newToken)
     {
         profile.Name = name;
         profile.Notes = notes;
+        profile.ExpiresOn = expiresOn;
         if (!string.IsNullOrEmpty(newToken))
             SetToken(profile, newToken);
         else
